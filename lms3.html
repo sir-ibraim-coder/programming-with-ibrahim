@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>برنامج إدارة معمل الحاسب</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(to bottom right, #e0f7fa, #fffde7);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(to right, #007bff, #00bcd4);
+      color: white;
+      padding: 20px;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    h1 { margin: 0; font-size: 2em; }
+    h2 { margin: 5px 0; font-weight: normal; font-size: 1.3em; }
+    h3 { margin: 0; font-weight: normal; font-size: 1em; color: #e3f2fd; }
+
+    section {
+      background: white;
+      width: 85%;
+      margin: 25px auto;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    select, input {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 60%;
+      font-size: 1em;
+      text-align: center;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 8px;
+      font-size: 1em;
+      margin-top: 10px;
+      margin-inline: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover { background-color: #0056b3; transform: scale(1.05); }
+
+    table {
+      width: 95%;
+      margin: 25px auto;
+      border-collapse: collapse;
+      font-size: 0.95em;
+      border-radius: 10px;
+      overflow: hidden;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #00bcd4;
+      color: white;
+      font-size: 1.1em;
+    }
+
+    .time-row th {
+      background: #b2ebf2;
+      color: #333;
+      font-size: 0.9em;
+    }
+
+    td { background: #fdfdfd; transition: 0.3s; }
+
+    tr:nth-child(even) td:first-child {
+      background: #e3f2fd;
+      font-weight: bold;
+    }
+
+    tr:nth-child(odd) td:first-child {
+      background: #bbdefb;
+      font-weight: bold;
+    }
+
+    .active {
+      background-color: #c8f7c5 !important;
+      font-weight: bold;
+      color: #007b00;
+      border: 2px solid #00b300;
+      box-shadow: 0 0 10px #81c784;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      font-size: 0.9em;
+    }
+
+    .teacher-box {
+      margin: 2px;
+      padding: 4px;
+      border-radius: 6px;
+      color: white;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h3>برنامج إدارة معمل الحاسب</h3>
+  <h1>مدرسة شهيد السلام الثانوية العسكرية</h1>
+  <h2>إعداد: السير / إبراهيم مصطفى</h2>
+</header>
+
+<section>
+  <h3>إدخال الجدول الأسبوعي</h3>
+  <label>اليوم:</label>
+  <select id="day">
+    <option value="">اختر اليوم</option>
+    <option>السبت</option>
+    <option>الأحد</option>
+    <option>الإثنين</option>
+    <option>الثلاثاء</option>
+    <option>الأربعاء</option>
+    <option>الخميس</option>
+  </select>
+
+  <label>الحصة:</label>
+  <select id="period">
+    <option value="">اختر الحصة</option>
+    <option>الأولى</option>
+    <option>الثانية</option>
+    <option>الثالثة</option>
+    <option>الرابعة</option>
+    <option>الخامسة</option>
+    <option>السادسة</option>
+    <option>السابعة</option>
+  </select>
+
+  <label>اسم المعلم:</label>
+  <input type="text" id="teacher" placeholder="أدخل اسم المعلم">
+
+  <label>الفصل:</label>
+  <input type="text" id="class" placeholder="أدخل الفصل (مثل 1-3)">
+
+  <div>
+    <button onclick="addEntry()">إضافة إلى الجدول</button>
+    <button onclick="finishSchedule()">عرض الجدول</button>
+    <button onclick="clearAll()">مسح الجدول</button>
+  </div>
+</section>
+
+<div id="tableContainer"></div>
+
+<footer>
+  نظام إدارة معمل الحاسب © 2025
+</footer>
+
+<script>
+  const days = ["السبت","الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس"];
+  const periods = ["الأولى","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة"];
+  const times = [
+    {start: "7:10", end: "7:50"},
+    {start: "7:50", end: "8:30"},
+    {start: "8:30", end: "9:10"},
+    {start: "9:10", end: "9:50"},
+    {start: "10:00", end: "10:35"},
+    {start: "10:35", end: "11:10"},
+    {start: "11:10", end: "11:45"}
+  ];
+
+  let schedule = JSON.parse(localStorage.getItem("scheduleData")) || [];
+  const teacherColors = {};
+
+  function getTeacherColor(name) {
+    if (!teacherColors[name]) {
+      const colors = ['#f44336','#e91e63','#9c27b0','#3f51b5','#03a9f4','#009688','#4caf50','#ff9800','#795548','#607d8b'];
+      teacherColors[name] = colors[Object.keys(teacherColors).length % colors.length];
+    }
+    return teacherColors[name];
+  }
+
+  function addEntry() {
+    const day = document.getElementById("day").value;
+    const period = document.getElementById("period").value;
+    const teacher = document.getElementById("teacher").value.trim();
+    const className = document.getElementById("class").value.trim();
+    if (!day || !period || !teacher || !className) return alert("الرجاء إدخال جميع البيانات");
+
+    const exists = schedule.some(e => e.day===day && e.period===period && e.teacher===teacher && e.className===className);
+    if (exists) return alert("هذه الحصة مضافة بالفعل");
+
+    schedule.push({day,period,teacher,className});
+    localStorage.setItem("scheduleData", JSON.stringify(schedule));
+    document.getElementById("teacher").value="";
+    document.getElementById("class").value="";
+    document.getElementById("day").value="";
+    document.getElementById("period").value="";
+    alert("تمت إضافة الحصة ✅");
+    showFullTable();
+  }
+
+  function finishSchedule(){ showFullTable(); }
+
+  function clearAll(){
+    if(confirm("هل أنت متأكد من مسح الجدول بالكامل؟")){
+      schedule=[]; localStorage.removeItem("scheduleData"); showFullTable();
+    }
+  }
+
+  function showFullTable(){
+    let html=`<table><tr><th>اليوم</th>`;
+    periods.forEach(p=>html+=`<th>${p}</th>`); html+=`</tr>`;
+
+    html += `<tr class="time-row"><th>الوقت</th>`;
+    times.forEach(t=> html += `<th>${t.start} - ${t.end}</th>`);
+    html += `</tr>`;
+
+    days.forEach(day=>{
+      html+=`<tr><td>${day}</td>`;
+      periods.forEach(period=>{
+        const entries=schedule.filter(e=>e.day===day && e.period===period);
+        let content=entries.map(e=>{
+          const color=getTeacherColor(e.teacher);
+          return `<div class="teacher-box" style="background:${color}">${e.teacher}<br><small>${e.className}</small></div>`;
+        }).join('');
+        html+=`<td>${content||'-'}</td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`</table>`;
+    document.getElementById("tableContainer").innerHTML=html;
+  }
+
+  window.onload=showFullTable;
+</script>
+
+</body>
+</html>

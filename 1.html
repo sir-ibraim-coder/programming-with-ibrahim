@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>اختبار JavaScript - مدرسة شهيد السلام الثانوية العسكرية</title>
+<style>
+  :root{
+    --bg:#071428; --card:#0b1220; --text:#e6eef8;
+    --accent:#1976d2; --muted:#94a3b8; --success:#2e7d32; --danger:#c62828;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Cairo", sans-serif;
+    background:linear-gradient(180deg,#081226 0%,#031026 100%);
+    color:var(--text); padding:20px; min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .container{ width:100%; max-width:980px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:18px; box-shadow:0 8px 40px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03); }
+  .header{ text-align:center; margin-bottom:12px; }
+  .school{ font-size:22px; color:var(--accent); font-weight:700; margin:0; }
+  .author{ color:var(--muted); margin-top:6px; font-size:13px; }
+  .top{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:14px; }
+  .badge{ background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:10px; color:var(--muted); font-size:14px; }
+  .progress{ width:100%; height:12px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,0.02); }
+  .progress>div{ height:100%; width:0%; transition:width 400ms ease; background:linear-gradient(90deg,var(--accent), #42a5f5); }
+  .card{ background:transparent; padding:12px; border-radius:10px; margin-bottom:10px; }
+  .q-ar{ text-align:right; font-size:20px; color:#eaf4ff; margin-bottom:8px; direction:rtl; }
+  .q-code{ text-align:left; font-family: "Courier New", monospace; background:rgba(255,255,255,0.02); padding:10px; border-radius:8px; color:#dbeafe; margin-bottom:12px; overflow:auto; direction:ltr; }
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .option{ background: rgba(255,255,255,0.02); padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.02); cursor:pointer; text-align:right; transition:all 180ms ease; user-select:none; }
+  .option:hover{ transform:translateY(-3px) }
+  .option.disabled{ pointer-events:none; opacity:0.85 }
+  .option.correct{ background: rgba(46,125,50,0.18); border-color: rgba(46,125,50,0.4); color:#dff0de }
+  .option.wrong{ background: rgba(198,40,40,0.12); border-color: rgba(198,40,40,0.35); color:#ffdede }
+  .controls{ display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; }
+  button{ background: linear-gradient(180deg,#42a5f5,#1976d2); color:white; border:none; padding:10px 18px; border-radius:10px; font-size:16px; cursor:pointer; box-shadow: 0 6px 18px rgba(2,6,23,0.5); }
+  button.secondary{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted); }
+  #finishBtn{ background: linear-gradient(180deg,#ff7a59,#ff5722); }
+  #timer{ font-size:15px; color:#ffd54f; font-weight:700; background: rgba(255,255,255,0.02); padding:6px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.02); }
+  #resultCard{ display:none; padding:14px; border-radius:10px; margin-top:12px; background: linear-gradient(180deg, rgba(46,125,50,0.06), rgba(46,125,50,0.03)); border:1px solid rgba(46,125,50,0.15); }
+  .score{ font-size:22px; font-weight:700; color:#e6f4ea; }
+  .review{ margin-top:16px; display:grid; gap:10px; }
+  .review-item{ background: rgba(255,255,255,0.02); padding:10px; border-radius:8px; text-align:right; border:1px solid rgba(255,255,255,0.02); }
+  .small{ font-size:13px; color:var(--muted); margin-bottom:6px; }
+  .answer{ display:flex; gap:8px; justify-content:flex-end; align-items:center; flex-wrap:wrap; }
+  .chip{ background: rgba(255,255,255,0.04); padding:6px 10px; border-radius:999px; font-size:13px; border:1px solid rgba(255,255,255,0.02); }
+  .chip.correct{ background: rgba(46,125,50,0.13); border-color: rgba(46,125,50,0.3); color:#dff0de }
+  .chip.wrong{ background: rgba(198,40,40,0.12); border-color: rgba(198,40,40,0.3); color:#ffdede }
+  footer{ text-align:center; margin-top:12px; color:var(--muted); font-size:14px; }
+  @media (max-width:700px){
+    .q-ar{ font-size:18px } button{ width:100% }
+    .controls{ flex-direction:column; align-items:stretch }
+  }
+</style>
+</head>
+<body>
+  <div class="header" style="text-align:center; margin-bottom:14px;">
+    <div class="school">🏫 مدرسة شهيد السلام الثانوية العسكرية</div>
+    <div class="author">إعداد السير / إبراهيم مصطفى</div>
+    <div class="duration" style="color:var(--muted); margin-top:6px;">⏱️ المدة: <strong>100 دقيقة</strong> — (معدل دقيقة واحدة لكل سؤال)</div>
+  </div>
+
+  <div class="container" role="main" aria-live="polite">
+    <div class="top">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div class="badge">الأسئلة: <strong id="totalCount">100</strong></div>
+        <div class="badge">السؤال: <strong id="currentIndex">1</strong>/<span id="totalCount2">100</span></div>
+        <div id="timer" class="badge">الوقت المتبقي: 100:00</div>
+      </div>
+      <div style="flex:1; margin-left:12px;">
+        <div class="progress" title="شريط التقدم">
+          <div id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="questionBlock">
+        <div id="qArabic" class="q-ar"></div>
+        <pre id="qCode" class="q-code" style="display:none; margin:0;"></pre>
+      </div>
+
+      <div class="options" id="optionsBox" role="list"></div>
+
+      <div class="controls" style="margin-top:14px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="prevBtn" class="secondary">السابق</button>
+          <button id="nextBtn">التالي</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button id="finishBtn">إنهاء</button>
+        </div>
+      </div>
+
+      <div id="resultCard">
+        <div class="score" id="scoreText"></div>
+        <div class="small" style="margin-top:8px">أعرض أدناه إجاباتك مع الإجابات الصحيحة.</div>
+      </div>
+
+      <div id="reviewList" class="review" aria-live="polite"></div>
+    </div>
+
+    <footer>© 2025 مدرسة شهيد السلام الثانوية العسكرية - إعداد: إبراهيم مصطفى</footer>
+  </div>
+
+  <script>
+    // ======= قاعدة الأسئلة (100 سؤال) =======
+    // كل عنصر: question (نص كامل)، options (مصفوفة نصوص)، correct (فهرس الإجابة الصحيحة)
+    const quizData = [
+      {question:"ما وظيفة console.log() في JavaScript؟", options:["تعريف متغير","طباعة نص/قيمة في وحدة التحكم (الكونسول)","إيقاف تشغيل البرنامج","تغيير نوع المتغير"], correct:1},
+      {question:"ماذا سيطبع الكود: console.log(2 + 3);", options:["5","23","undefined","خطأ"], correct:0},
+      {question:"إذا كتبت ;console.log('Hello' + ' ' + 'World') ماذا يحدث؟", options:["يطبع Hello World","يطبع Hello+World","يربط السلاسل كـ مصفوفة","يرجع خطأ"], correct:0},
+      {question:"ماذا سيطبع: console.log(typeof 123);", options:["'number'","'string'","'integer'","خطأ"], correct:0},
+      {question:"أيهما مناسب لطباعة متغير داخل رسالة؟", options:["(`قيمة المتغير: ${x}`)console.log","('قيمة المتغير: ' + )console.log","print(x)","echo(x)"], correct:0},
+      {question:"يمكن استخدام console.log لغرض:", options:["تصحيح الأخطاء (debugging)","تسريع الأداء","حذف المتغيرات","تشفير البيانات"], correct:0},
+      {question:"ماذا سيظهر في الكونسول: console.log(null);", options:["null","'null'","undefined","0"], correct:0},
+      {question:"أي واحد من التالي يُظهر في الكونسول نوع المتغير؟", options:["console.log(typeof x)","console.log(valueOf(x))","console.log(typeof(x)())","console.type(x)"], correct:0},
+      {question:"ما الفرق بين console.log و console.error؟", options:["لا فرق","console.error تظهر رسائل خطأ وتلونها عادة باللون الأحمر","console.log تطبع في ملف خارجي","console.error توقف تنفيذ الكود"], correct:1},
+      {question:"يمكن استخدام console.log لعرض كائن (object)ماذا يظهر عادة؟", options:["بنية الكائن والقيم","اسم الكائن فقط","حجم الكائن","لن يظهر شيء"], correct:0},
+
+      {question:"كيف نكتب تعليق أحادي السطر في JavaScript؟", options:["/* تعليق */","// تعليق","# تعليق","<!-- تعليق -->"], correct:1},
+      {question:"كيف نكتب تعليق متعدد الأسطر؟", options:["/* تعليق متعدد \n السطور */","// تعليق1 // تعليق2","<!-- تعليق -->","# تعليق"], correct:0},
+      {question:"التعليقات تُستخدم في الكود لـ:", options:["تشغيل أسرع","شرح الكود أو تعطيل أسطر مؤقتًا","تغيير نوع البيانات","حذف الكود نهائيًا"], correct:1},
+      {question:"ما التأثير الآتي: // console.log('Hi')", options:["السطر لن يُنفذ","ينفذ معلناً","يظهر في الكونسول","يتسبب في خطأ"], correct:0},
+      {question:"أي من التالي ليس تعليقاً؟", options:["/* نص */","// نص","' نص '","<!-- نص -->"], correct:2},
+      {question:"هل يؤثر التعليق داخل سلسلة نصية '//' ؟", options:["نعم كتعليق","لا - لأنه داخل string","يجعل الكود يتوقف","يحذف السطر"], correct:1},
+      {question:"يمكن استخدام التعليقات لوضع ملاحظات:", options:["نعم لتوضيح الكود للمطورين الآخرين","لا لأنها تسرق الأداء","نعم لتحويل الكود إلى HTML","لا لأنها ممنوعة"], correct:0},
+      {question:"أي خيار يسمح بتعطيل كتلة من الكود مؤقتاً؟", options:["استخدام /* ... */","استخدام // في كل سطر","كلاهما ممكن","لا يمكن تعطيله"], correct:2},
+      {question:"التعليقات تُحتسب كجزء من طول الملف عند التنفيذ؟", options:["لا تؤثر على التنفيذ لكنها تزيد حجم المصدر قليلاً","تتسبب في أخطاء","تختصر زمن التنفيذ","تترجم إلى كود جافاسكربت"], correct:0},
+      {question:"يمكن وضع تعليق داخل تعبير جافاسكربت؟", options:["لا، يؤدي لخطأ","نعم بشرط أن يكون خارج الأقواس","نعم دائما","فقط في المتصفحات الحديثة"], correct:1},
+
+      {question:"ما الكلمة المفتاحية لتعريف متغير قابل للتغيير محلياً؟", options:["const","var","let","static"], correct:2},
+      {question:"ما الفرق الرئيسي بين let و var؟", options:["let لها نطاق كتلة (block scope) بينما var نطاقها دالة (function scope)","لا فرق","var أسرع","let لا يعمل في المتصفحات القديمة فقط"], correct:0},
+      {question:"كيف نعلن عن ثابت لا يمكن تغييره؟", options:[";let PI = 3.14",";const PI = 3.14",";var PI = 3.14",";static PI = 3.14"], correct:1},
+      {question:"ما الناتج من الشيفرة: let x; console.log(typeof x);", options:["'undefined'","'null'","'number'","'object'"], correct:0},
+      {question:"هل يمكن إعادة تعريف متغير مُعرف بـ let في نفس النطاق؟", options:["لا، سيعطي خطأ","نعم دائماً","يعتمد على المتصفح","يعتمد على نوع القيمة"], correct:0},
+      {question:"أي سطر يعرّف متغيراً محلياً داخل بلوك؟", options:["if(true){ let a = 5; }","function f(){ var b = 2 }","كلاهما","لا شيء مما سبق"], correct:2},
+      {question:"ما معنى 'hoisting' المتعلق بـ var و let؟", options:["var يتم رفع الإعلان إلى أعلى النطاق، let لا يتم رفعه بنفس الطريقة","let يتم رفعها فقط","لا شيء منهما يُرفع","كلاهما يرفعان بنفس الشكل"], correct:0},
+      {question:"ما الناتج: let a = '5'; a = +a; console.log(typeof a);", options:["'number'","'string'","'object'","'boolean'"], correct:0},
+      {question:"أيٌ صحيح لتعريف عدة متغيرات بـ let؟", options:[";let x =1, y=2",";let x=1 ;let x=2",";const x=1,y=2",";var x=1,y=2"], correct:0},
+      {question:"ما أفضل ممارسة لاختيار أسماء المتغيرات؟", options:["أسماء واضحة ومعبرة","أسماء قصيرة غير مفهومة","أرقام فقط","كلمات محجوزة"], correct:0},
+
+      {question:" ما ناتج التعبير:  5 + 3 * 2 ", options:["11","16","10","خطأ"], correct:0},
+      {question:"  ما ناتج: (10 / 4) في JavaScript قبل استخدام Math", options:["2.5","2","4","خطأ"], correct:0},
+      {question:"عملية الباقي (mod) تُكتب كـ:", options:["%","mod","/","\\"], correct:0},
+      {question:"ما ناتج ؟ : 2 ** 3 (عامل الأُس)", options:["8","6","9","خطأ"], correct:0},
+      {question:"أي تعبير يؤدي إلى تحويل '5' إلى رقم؟", options:["+'5'","'5'","Number('5')","كلاهما A و C"], correct:3},
+      {question:"ما ناتج: '5' + 3 ", options:["'53'","8","'8'","خطأ"], correct:0},
+      {question:"ما ناتج: 10 - '2'  ", options:["8","'8'","'102'","NaN"], correct:0},
+      {question:" ما ناتج parseInt('12px') ", options:["12","NaN","'12px'","'12'"], correct:0},
+      {question:"ما الفرق بين parseInt و parseFloat؟", options:["parseInt لإرجاع عدد صحيح، parseFloat لإرجاع رقم عشري","لا فرق","parseInt للـ float","parseFloat للـ int"], correct:0},
+      {question:" ما ناتج: Number('') ", options:[ "0","NaN","''","undefined"], correct:0},
+
+      {question:"العملية المنطقية AND تُكتب كـ:", options:["&&","||","!","&"], correct:0},
+      {question:"العملية OR تُكتب كـ:", options:["||","&&","!","or"], correct:0},
+      {question:"ماذا يقوم العامل ! ؟", options:["النفي (not)","الطرح","المقارنة","الجمع"], correct:0},
+      {question:"ما ناتج: true && false ؟", options:["false","true","'true'","خطأ"], correct:0},
+      {question:"(ما ناتج: (5 > 3) || (2 > 4)?  ", options:["true","false","'true'","خطأ"], correct:0},
+      {question:"مقارنة == vs ===: أي يشيك على النوع أيضا؟", options:["===","==","ليس أي منهما","يعتمد"], correct:0},
+      {question:"ماذا يعيد: null == undefined ", options:["true","false","خطأ","undefined"], correct:0},
+      {question:"ماذا يعيد: null === undefined  ", options:["false","true","خطأ","undefined"], correct:0},
+      {question:"أي نتيجة عند استخدام !0 في جافاسكربت؟", options:["true","false","0","1"], correct:0},
+      {question:"أي من التالي يُعتبر falsey (قيمة منطقية خطأ)؟", options:["'' (سلسلة فارغة)","'0'","1","'false'"], correct:0},
+
+      {question:"ما الناتج من;()Hello'.toUpperCase'", options:["HELLO","hello","Hello","خطأ"], correct:0},
+      {question:"لتحديد طول سلسلة نستخدم:", options:["str.length","length(str)","str.size()","str.len"], correct:0},
+      {question:"ما الناتج: 'abc'.indexOf('b') ", options:["1","2","0","-1"], correct:0},
+      {question:"ما وظيفة includes في السلاسل؟", options:["تفحص إذا كانت تحتوي على جزء معين","تقطع السلسلة","تعكس السلسلة","ترتبها"], correct:0},
+      {question:"لتقسيم سلسلة إلى مصفوفة نستخدم:", options:["split","slice","splice","join"], correct:0},
+      {question:"ماذا تفعل ()trim؟", options:["تحذف المسافات من البداية والنهاية","تحذف كل الحروف","تغير الحروف لأحرف كبيرة","تقسم السلسلة"], correct:0},
+      {question:"ما الناتج: 'Hello'.charAt(1)  ", options:["e","H","l","خطأ"], correct:0},
+      {question:"لدمج سلاسل نستخدم:", options:["concat أو +","merge","join","append"], correct:0},
+      {question:"ما ناتج: '123'.toString()  ", options:["'123'","123","NaN","خطأ"], correct:0},
+      {question:"ما الناتج: 'a,b,c'.split(',').length  ", options:["3","1","0","خطأ"], correct:0},
+
+      {question:"Math.round(4.7) يعطي:", options:["5","4","4.7","خطأ"], correct:0},
+      {question:"Math.floor(4.9) يعطي:", options:["4","5","4.9","خطأ"], correct:0},
+      {question:"Math.ceil(4.1) يعطي:", options:["5","4","4.1","خطأ"], correct:0},
+      {question:"Math.abs(-7) يعطي:", options:["7","-7","0","خطأ"], correct:0},
+      {question:"Math.max(2,5,1) يعطي:", options:["5","2","1","خطأ"], correct:0},
+      {question:"Math.min(2,5,1) يعطي:", options:["1","2","5","خطأ"], correct:0},
+      {question:"()Math.random يعطي:", options:["قيمة عشوائية بين 0 (شامل) و1 (غير شامل)","قيمة بين 1 و10","رقم ثابت","خطأ"], correct:0},
+      {question:"لتحويل قيمة عشرية إلى أقرب عدد صحيح نستخدم:", options:["Math.round","Math.trunc","Math.floor","Number.toInt"], correct:0},
+      {question:"Math.pow(2,3) يعطي:", options:["8","6","9","خطأ"], correct:0},
+      {question:"ما وظيفة Math.sqrt(16) ؟", options:["إرجاع الجذر التربيعي (4)","رفع إلى الأس","إرجاع العدد 16","خطأ"], correct:0},
+
+      {question:"جملة if تستخدم في:", options:["التحقق من شرط","تكرار الكود","تعريف متغير","إخفاء العناصر"], correct:0},
+      {question:"صيغة if-else الصحيحة:", options:["if(cond){ } else { }","if { } else if(cond)","if(cond): else:","if(cond) then {}"], correct:0},
+      {question:"يمكن استخدام switch بدلاً من:", options:["سلسلة if-else المتكررة","الحلقات","التعليقات","التعريفات"], correct:0},
+      {question:"في switch، استخدام break مهم لـ:", options:["منع الاستمرار للتفرعات التالية (fall-through)","تكرار الحالة","تعريف متغير","لا فائدة"], correct:0},
+      {question:"ما ناتج: if(false) console.log('A'); else console.log('B');", options:["B","A","خطأ","لا شيء"], correct:0},
+      {question:"أي عبارة صحيحة عن else if؟", options:["يمكن أن تأتي بين if و else","تأتي بعد else فقط","تأتي قبل if","ليست موجودة في JS"], correct:0},
+      {question:"ماذا يحدث إذا لم نضع break في أحد case؟", options:["ينفذ الكود في الحالات التالية حتى يجد break","يوقف التنفيذ","يعطي خطأ","يتجاهل الحالة"], correct:0},
+      {question:"أيٌ يستخدم للمقارنة المتساوية مع التحقق من النوع؟", options:["===","==","=","!=="], correct:0},
+      {question:"كيف نتحقق مما إذا كانت القيمة ضمن نطاق بين 1 و10؟", options:["if(x>=1 && x<=10)","if(1<=x<=10)","if(x in 1..10)","if(1 < x < 10)"], correct:0},
+      {question:"ما أفضل طريقة للتعامل مع شروط كثيرة ومركبة؟", options:["استخدام دوال تفصيلية لكل شرط","كل الشروط في if واحد","switch لكل حالة شرطية مركبة","لا توجد طريقة"], correct:0},
+
+      {question:"ما نوع الحلقة التي تعمل طالما الشرط صحيح؟", options:["while","for","switch","if"], correct:0},
+      {question:"صيغة حلقة for الأساسية:", options:["for(let i=0;i<10;i++){ }","for i in range(10):","while(i<10){}","repeat until"], correct:0},
+      {question:"do-while تختلف عن while بأن:", options:["تنفذ مرة على الأقل قبل فحص الشرط","لا تفحص الشرط أبداً","تنفذ بعد الحلقة","تتكرر إلى أجل غير مسمى"], correct:0},
+      {question:"ما أثر استخدام break داخل حلقة؟", options:["إيقاف الحلقة فوراً والخروج منها","تخطي التكرار الحالي","تكرار الحلقة من البداية","لا تأثير"], correct:0},
+      {question:"ما أثر استخدام continue داخل حلقة؟", options:["تخطي التكرار الحالي إلى التالي","إنهاء الحلقة","إلغاء الحلقة","لا تأثير"], correct:0},
+      {question:"في حلقة for عادة ما نستخدم i++ لـ:", options:["زيادة العداد خطوة واحدة","خفض العداد","إعادة ضبط العداد","لا شيء"], correct:0},
+      {question:"ما ناتج الكود: for(let i=0;i<3;i++){ console.log(i); }", options:["0 1 2","1 2 3","0 1 2 3","خطأ"], correct:0},
+      {question:"حلقات غير منتهية (infinite loops) تحدث عندما:", options:["الشرط لا يصبح false أبداً","الشرط يصبح false فوراً","لا تستخدم break","while(false)"], correct:0},
+      {question:"ما الأسلوب الصحيح للتكرار على مصفوفة؟", options:["for(let i=0;i<arr.length;i++){}", "forEach/for..of وغيرها","كلاهما صحيحان","لا يمكن التكرار على المصفوفات"], correct:2},
+      {question:"أي من التالي يُستخدم لتكرار عناصر الكائن (object)؟", options:["for...in","for...of","forEach","while"], correct:0},
+
+      {question:"ما وظيفة ()array.push ؟", options:["تضيف عنصر في نهاية المصفوفة","تحذف أول عنصر","تعكس المصفوفة","ترتب المصفوفة"], correct:0},
+      {question:"ما وظيفة ()array.pop ؟", options:["تحذف آخر عنصر وتعيده","تحذف أول عنصر","تضيف عنصر في البداية","تفحص الطول"], correct:0},
+      {question:"ما الفرق بين slice و splice؟", options:["slice لا يغير المصفوفة الأصلية، splice يغيرها","لا فرق","splice يعيد نسخة","slice يضيف عناصر"], correct:0},
+      {question:"أي دالة تُعيد مؤشر عنصر في المصفوفة؟", options:["indexOf","find","map","filter"], correct:0},
+      {question:"ما وظيفة includes؟", options:["تفحص إذا كانت المصفوفة تحتوي قيمة معينة","ترتب المصفوفة","تحذف العناصر","تفصل المصفوفة"], correct:0},
+      {question:"map تقوم بـ:", options:["ترجمة كل عنصر إلى قيمة جديدة وإرجاع مصفوفة جديدة","تصفية العناصر","حذف العناصر","تحويل المصفوفة إلى سلسلة"], correct:0},
+      {question:"filter تقوم بـ:", options:["إرجاع مصفوفة بعناصر تحقق شرطاً","إضافة عناصر","تحويل إلى كائن","توحيد العناصر"], correct:0},
+      {question:"reduce تُستخدم لـ:", options:["تجميع عناصر المصفوفة إلى قيمة واحدة","نسخ المصفوفة","إفراغ المصفوفة","عرض طول المصفوفة"], correct:0},
+      {question:"ما ناتج: [1,2,3].join('-')  ", options:["'1-2-3'","[1-2-3]","'123'","خطأ"], correct:0},
+      {question:"أي تعبير ينسخ مصفوفة دون تغيير الأصل؟", options:["const b = a.slice();","const b = a;","a.splice();","a.pop()"], correct:0}
+    ];
+
+    // ======= إعدادات الاختبار =======
+    const TOTAL = quizData.length;
+    document.getElementById('totalCount').textContent = TOTAL;
+    document.getElementById('totalCount2').textContent = TOTAL;
+
+    let current = 0;
+    let score = 0;
+    const userAnswers = new Array(TOTAL).fill(-1);
+    const answeredFlag = new Array(TOTAL).fill(false);
+
+    const TOTAL_SECONDS = 100 * 60;
+    let timeLeft = TOTAL_SECONDS;
+    let timerInterval = null;
+
+    // عناصر DOM
+    const qArabicEl = document.getElementById('qArabic');
+    const qCodeEl = document.getElementById('qCode');
+    const optionsBox = document.getElementById('optionsBox');
+    const currentIndexEl = document.getElementById('currentIndex');
+    const progressFill = document.getElementById('progressFill');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const finishBtn = document.getElementById('finishBtn');
+    const resultCard = document.getElementById('resultCard');
+    const scoreText = document.getElementById('scoreText');
+    const reviewList = document.getElementById('reviewList');
+    const timerEl = document.getElementById('timer');
+
+    // ======= مؤقت =======
+    function startTimer(){
+      updateTimerDisplay();
+      timerInterval = setInterval(()=>{
+        timeLeft--;
+        updateTimerDisplay();
+        if(timeLeft <= 0){
+          clearInterval(timerInterval);
+          finishQuiz('انتهى الوقت');
+        }
+      },1000);
+    }
+    function updateTimerDisplay(){
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      timerEl.textContent = `الوقت المتبقي: ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    }
+
+    // تقسيم السؤال إلى سطر عربي وسطر كود (إذا وجد جزء "كودي" بعد أول نقطتين :)
+    function splitQuestionText(text){
+      if(!text.includes(':')) return {arabic:text, code:null};
+      const idx = text.indexOf(':');
+      const left = text.slice(0, idx).trim();
+      const right = text.slice(idx+1).trim();
+      // شرط تقريبي لتحديد ما إذا كان الجزء بعد النقطتين عبارة عن كود/معادلة
+      const looksLikeCode = /console|typeof|\(|\)|\+|\-|==|===|`|'|"|;|=>|Math\.|parseInt|\.split|\.join/.test(right);
+      if(looksLikeCode) return {arabic:left + ':', code:right};
+      return {arabic:text, code:null};
+    }
+
+    // عرض السؤال
+    function renderQuestion(index){
+      const q = quizData[index];
+      currentIndexEl.textContent = index + 1;
+      const pct = Math.round(((index)/TOTAL) * 100);
+      progressFill.style.width = pct + '%';
+
+      const parts = splitQuestionText(q.question);
+      qArabicEl.textContent = parts.arabic;
+      if(parts.code){
+        qCodeEl.style.display = 'block';
+        qCodeEl.textContent = parts.code;
+      } else {
+        qCodeEl.style.display = 'none';
+        qCodeEl.textContent = '';
+      }
+
+      optionsBox.innerHTML = q.options.map((opt, i) =>
+        `<div class="option" data-i="${i}" role="button" tabindex="0">${opt}</div>`
+      ).join('');
+
+      const optionEls = optionsBox.querySelectorAll('.option');
+      optionEls.forEach(el=>{
+        const i = Number(el.getAttribute('data-i'));
+        if(userAnswers[index] !== -1){
+          el.classList.add('disabled');
+          if(i === quizData[index].correct) el.classList.add('correct');
+          if(i === userAnswers[index] && i !== quizData[index].correct) el.classList.add('wrong');
+        } else {
+          el.classList.remove('disabled','correct','wrong');
+        }
+      });
+
+      optionEls.forEach(el=>{
+        el.addEventListener('click', ()=> handleSelect(index, Number(el.getAttribute('data-i'))));
+        el.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            el.click();
+          }
+        });
+      });
+
+      prevBtn.disabled = index === 0;
+      nextBtn.textContent = (index === TOTAL - 1) ? 'إنهاء' : 'التالي';
+    }
+
+    function handleSelect(qIndex, optIndex){
+      if(userAnswers[qIndex] !== -1) return;
+      userAnswers[qIndex] = optIndex;
+      const elems = optionsBox.querySelectorAll('.option');
+      elems.forEach(el=>el.classList.add('disabled'));
+      if(optIndex === quizData[qIndex].correct){
+        elems[optIndex].classList.add('correct');
+        if(!answeredFlag[qIndex]){ score++; answeredFlag[qIndex]=true; }
+      } else {
+        elems[optIndex].classList.add('wrong');
+        elems[quizData[qIndex].correct].classList.add('correct');
+        if(!answeredFlag[qIndex]){ answeredFlag[qIndex]=true; }
+      }
+    }
+
+    prevBtn.addEventListener('click', ()=>{
+      if(current > 0){
+        current--;
+        renderQuestion(current);
+      }
+    });
+    nextBtn.addEventListener('click', ()=>{
+      if(current < TOTAL - 1){
+        current++;
+        renderQuestion(current);
+      } else {
+        finishQuiz('انتهى الاختبار');
+      }
+    });
+    finishBtn.addEventListener('click', ()=> finishQuiz('انتهى الاختبار'));
+
+    let finished = false;
+    function finishQuiz(reason){
+      if(finished) return;
+      finished = true;
+      clearInterval(timerInterval);
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      progressFill.style.width = '100%';
+      scoreText.textContent = `🎯 ${reason} — نتيجتك: ${score} من ${TOTAL}`;
+      resultCard.style.display = 'block';
+      renderReview();
+      finishBtn.textContent = 'خروج';
+      finishBtn.onclick = ()=> location.reload();
+      setTimeout(()=> window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'}), 300);
+    }
+
+    function renderReview(){
+      reviewList.innerHTML = '';
+      quizData.forEach((q, idx)=>{
+        const user = userAnswers[idx];
+        const isCorrect = user === q.correct;
+        const item = document.createElement('div');
+        item.className = 'review-item';
+        const qHtml = document.createElement('div');
+        qHtml.className = 'small';
+        qHtml.textContent = `${idx+1} - ${q.question}`;
+        const ansDiv = document.createElement('div');
+        ansDiv.className = 'answer';
+
+        const userChip = document.createElement('div');
+        userChip.className = 'chip ' + (isCorrect ? 'correct' : 'wrong');
+        userChip.textContent = user === -1 ? 'لم يُجَب' : `إجابتك: ${q.options[user]}`;
+
+        const correctChip = document.createElement('div');
+        correctChip.className = 'chip correct';
+        correctChip.textContent = `الإجابة الصحيحة: ${q.options[q.correct]}`;
+
+        ansDiv.appendChild(userChip);
+        ansDiv.appendChild(correctChip);
+
+        item.appendChild(qHtml);
+        item.appendChild(ansDiv);
+        reviewList.appendChild(item);
+      });
+    }
+
+    document.addEventListener('keydown', (e)=>{
+      if(finished) return;
+      if(e.key === 'ArrowRight') nextBtn.click();
+      else if(e.key === 'ArrowLeft') prevBtn.click();
+    });
+
+    // بدء
+    renderQuestion(current);
+    startTimer();
+  </script>
+</body>
+</html>
